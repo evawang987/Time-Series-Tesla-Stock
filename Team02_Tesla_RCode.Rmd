@@ -1,0 +1,369 @@
+---
+title: "Tesla Time Series Project"
+author: "Team 2: Jazz Ling, Eva Wang, Chris Fake, Nick Miller"
+format:
+  html:
+    theme: united
+    toc: true
+    toc-location: left
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Import Data
+```{r}
+tesla.data <- read.csv('TSLA.csv')
+
+tesla.data$Date <- as.Date(tesla.data$Date, format = "%Y-%m-%d")
+```
+
+## Clean Data and Create Weekly and Monthly Time series
+```{r}
+# Weekly
+library(dplyr)
+weekly.data <- tesla.data %>%
+  group_by(week = format(Date, "%Y-%U")) %>%
+  summarise(Adj.Close = median(Adj.Close))
+
+weekly.ts <- ts(weekly.data$Adj.Close, freq = 52, start = c(2017,1), end = c(2023,2))
+plot(weekly.ts, ylab = "Stock Price in $USD", xlab = "Year", main = "Weekly Tesla Stock Price vs. Year")
+
+# Monthly
+monthly.data <- aggregate(tesla.data$Adj.Close, 
+                          by = list(format(tesla.data$Date, "%Y-%m")), 
+                          FUN = median)
+monthly.ts <- ts(monthly.data$x, freq = 12, start = c(2017,1), end = c(2023,2))
+plot(monthly.ts, ylab = "Stock Price in $USD", xlab = "Year", main = "Monthly Tesla Stock Price vs. Year (2017-2023)")
+```
+
+# AcF of Differences Plot
+```{r}
+library(forecast)
+#Weekly
+Acf(diff(weekly.ts), main = "ACF of Differences on Weekly Data")
+
+#Monthly
+Acf(diff(monthly.ts), main = "ACF of Differences on Monthly Data")
+```
+
+# Plot for COVID-19 and Global Chip Shortage Impact
+```{r}
+covid.ts <- ts(monthly.data$x, freq = 12, start = c(2019,1), end = c(2023,2))
+plot(covid.ts, ylab = "Stock Price in $USD", xlab = "Year", main = "Monthly Tesla Stock Price vs. Year (2019-2023)", xaxt = "n")
+axis(1, at = seq(2019, 2023, by = 1))
+```
+
+# Forecasting Data
+```{r}
+tesla.week <- window(weekly.ts, start = c(2019,1), end = c(2023,2))
+tesla.mos <- window(monthly.ts, start = c(2019,1), end = c(2023,2))
+```
+
+
+### Data Partition
+```{r}
+# Weekly
+nValid.week <- length(seq(from = as.Date("2022-06-01"), to= as.Date("2023-02-14"), by="week")) 
+# start from 2022.6
+nTrain.week <- length(tesla.week) - nValid.week
+
+train.ts.week <- window(tesla.week, start = c(2019,1), end = c(2019, nTrain.week)) 
+valid.ts.week <- window(tesla.week, start=c(2019, nTrain.week + 1), end = c(2019, nTrain.week + nValid.week))
+```
+
+```{r}
+# Monthly
+nValid.mos <- 3
+nTrain.mos <- length(tesla.mos) - nValid.mos
+
+train.ts.mos <- window(tesla.mos, start = c(2019,1), end = c(2019, nTrain.mos)) 
+valid.ts.mos <- window(tesla.mos, start=c(2019, nTrain.mos + 1), end = c(2019, nTrain.mos + nValid.mos))
+```
+
+# Regression Based models
+
+Let's try a couple different regression-based models and see which one works best
+
+### Regression - Weekly
+```{r}
+trend.wk.lm <- tslm(train.ts.week ~ trend)
+trend.wk.season.lm <- tslm(train.ts.week ~ trend + season)
+poly.wk.season.lm <- tslm(train.ts.week ~ trend + I(trend^2) + season)
+
+
+trend.wk.lm.pred <- forecast(trend.wk.lm, h=nValid.week, level=0)
+trend.wk.season.lm.pred <- forecast(trend.wk.season.lm, h=nValid.week, level=0)
+poly.wk.season.lm.pred <- forecast(poly.wk.season.lm, h=nValid.week, level=0)
+
+accuracy(trend.wk.lm.pred$mean, valid.ts.week)
+accuracy(trend.wk.season.lm.pred$mean, valid.ts.week)
+accuracy(poly.wk.season.lm.pred$mean, valid.ts.week)
+```
+
+From these models and comparing the MAPE, we can clearly see that the linear model with just trend and season is the best predictor of the telsa stock.
+
+Let's visualize this now.
+```{r}
+plot(tesla.week, xlab = "Year", ylab = "Tesla Stock Price in $USD", main = "Linear Regression for Weekly Data")
+lines(trend.wk.lm.pred$mean, col='green')
+lines(trend.wk.season.lm.pred$mean, col='red')
+lines(poly.wk.season.lm.pred$mean, col='blue')
+```
+
+### Regression - Monthly
+```{r}
+trend.mos.lm <- tslm(train.ts.mos ~ trend)
+trend.mos.season.lm <- tslm(train.ts.mos ~ trend + season)
+poly.mos.season.lm <- tslm(train.ts.mos ~ trend + I(trend^2) + season)
+
+trend.mos.lm.pred <- forecast(trend.mos.lm, h=nValid.mos, level=0)
+trend.mos.season.lm.pred <- forecast(trend.mos.season.lm, h=nValid.mos, level=0)
+poly.mos.season.lm.pred <- forecast(poly.mos.season.lm, h=nValid.mos, level=0)
+
+accuracy(trend.mos.lm.pred$mean, valid.ts.mos)
+accuracy(trend.mos.season.lm.pred$mean, valid.ts.mos)
+accuracy(poly.mos.season.lm.pred$mean, valid.ts.mos)
+```
+
+Here, it looks like actually the polynomial trend and season is the most accurate, with the linear model with just trend being a close second best.
+
+Let's visualize this monthly data now.
+```{r}
+plot(tesla.mos, xlab = "Year", ylab = "Tesla Stock Price in $USD", main = "Linear Regression for Monthly Data")
+lines(trend.mos.lm.pred$mean, col='green')
+lines(trend.mos.season.lm.pred$mean, col='red')
+lines(poly.mos.season.lm.pred$mean, col='blue')
+```
+
+From these, we can see that both predictions are going in the exact opposite direction of the actual validation data trend. Thus, it is safe to say that weekly data is best for this Tesla data when it comes to linear models.
+
+# Arima
+
+## Arima Model - Weekly
+```{r}
+library(forecast)
+arima.week <- auto.arima(train.ts.week) #ARIMA(0,1,1)
+summary(arima.week)
+arima.week.pred <- forecast(arima.week, h = nValid.week, level = 0)
+accuracy(arima.week.pred$mean, valid.ts.week)
+
+plot(tesla.week, xlab = "Year", ylab = "Tesla Stock Price in $USD", main = "ARIMA Model for Weekly Data")
+lines(arima.week.pred$mean, col = "red")
+```
+
+## Arima Model - Monthly
+```{r}
+arima.mos <- auto.arima(train.ts.mos) #ARIMA(0,1,0)
+summary(arima.mos)
+arima.mos.pred <- forecast(arima.mos, h = nValid.mos, level = 0)
+accuracy(arima.mos.pred$mean, valid.ts.mos)
+plot(tesla.mos, xlab = "Year", ylab = "Tesla Stock Price in $USD", main = "ARIMA Model for Monthly Data")
+lines(arima.mos.pred$mean, col = "red")
+```
+
+
+Look at Simple Exponential Smoothing model due to lack of apparent trend and seasonality.
+
+# SES
+
+## SES - Weekly
+```{r}
+ses.week.pred <- forecast(train.ts.week, h = nValid.week)
+accuracy(ses.week.pred$mean, valid.ts.week)
+plot(tesla.week, xlab = "Year", ylab = "Tesla Stock Price in $USD", main = "SES Model for Weekly Data")
+lines(ses.week.pred$mean, col = "red")
+```
+
+## SES - Monthly
+```{r}
+ses.mos.pred <- forecast(train.ts.mos, h = nValid.mos)
+accuracy(ses.mos.pred$mean, valid.ts.mos)
+plot(tesla.mos, xlab = "Year", ylab = "Tesla Stock Price in $USD", main = "SES Model for Monthly Data")
+lines(ses.mos.pred$mean, col = "red")
+```
+
+Let's try and use an automatically selected alpha using ETS()
+
+# ETS
+
+## ETS - Weekly
+```{r}
+ets.week <- ets(train.ts.week)
+summary(ets.week) #MAN
+ets.week.pred <- forecast(ets.week, h = nValid.week, level = 0)
+accuracy(ets.week.pred$mean, valid.ts.week)
+plot(tesla.week, xlab = "Year", ylab = "Tesla Stock Price in $USD", main = "ETS Model for Weekly Data")
+lines(ets.week.pred$mean, col = "red")
+```
+
+## ETS - Monthly
+```{r}
+ets.mos <- ets(train.ts.mos)
+summary(ets.mos) #MAN
+ets.mos.pred <- forecast(ets.mos, h = nValid.mos, level = 0)
+accuracy(ets.mos.pred$mean, valid.ts.mos)
+plot(tesla.mos, xlab = "Year", ylab = "Tesla Stock Price in $USD", main = "ETS Model for Monthly Data")
+lines(ets.mos.pred$mean, col = "red")
+```
+
+Let's compare the SES and ETS models:
+```{r}
+#Weekly
+accuracy(ses.week.pred$mean, valid.ts.week)
+accuracy(ets.week.pred$mean, valid.ts.week)
+
+#Monthly
+accuracy(ses.mos.pred$mean, valid.ts.mos)
+accuracy(ets.mos.pred$mean, valid.ts.mos)
+```
+We see that the SES model is better regarding weekly data as it has a smaller MAPE and MAE than the ETS model.  For the monthly data, the ETS() function gives the same model as the SES model.  We will proceed to use the SES model and its predictions to compare to the other models.
+
+# Neural Network
+
+```{r}
+library(ggplot2)
+
+# Weekly
+set.seed(80)
+fit_wk <- nnetar(train.ts.week, P = 2, lambda = 1)
+nnetforecast_wk <- forecast(fit_wk, h = nValid.week, PI = TRUE) 
+
+autoplot(nnetforecast_wk) + 
+  autolayer(valid.ts.week) +
+  ggtitle("Neural Network Weekly Forecast: (2,2,2)[52] model") +
+  xlab("Time") + ylab("Weekly Stock Price") +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "grey")) 
+
+accuracy(nnetforecast_wk$mean, valid.ts.week) # MAPE 10.66192
+
+
+# Monthly
+set.seed(2678)
+fit_mos <- nnetar(train.ts.mos, P = 2, lambda = 1)
+nnetforecast_mos <- forecast(fit_mos, h = nValid.mos, PI = TRUE) 
+
+autoplot(nnetforecast_mos) + 
+  autolayer(valid.ts.mos) +
+  ggtitle("Neural Network Monthly Forecast: (1,2,2)[12] model") +
+  xlab("Time") + ylab("Monthly Stock Price") +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "grey")) 
+
+accuracy(nnetforecast_mos$mean, valid.ts.mos) # MAPE 3.35368
+```
+
+# Naive
+```{r}
+#Weekly
+naive.wk.pred <- naive(train.ts.week, h=nValid.week)
+accuracy(naive.wk.pred$mean, valid.ts.week)
+
+#Monthly
+naive.mos.pred <- naive(train.ts.mos, h=nValid.mos)
+accuracy(naive.mos.pred$mean, valid.ts.mos)
+```
+
+
+# Model Evaluations
+```{r}
+# Weekly
+accuracy(trend.wk.lm.pred$mean, valid.ts.week)
+accuracy(trend.wk.season.lm.pred$mean, valid.ts.week)
+accuracy(poly.wk.season.lm.pred$mean, valid.ts.week)
+accuracy(arima.week.pred$mean, valid.ts.week)
+accuracy(ses.week.pred$mean, valid.ts.week)
+accuracy(nnetforecast_wk$mean, valid.ts.week)
+accuracy(naive.wk.pred$mean, valid.ts.week)
+
+# Monthly
+accuracy(trend.mos.lm.pred$mean, valid.ts.mos)
+accuracy(trend.mos.season.lm.pred$mean, valid.ts.mos)
+accuracy(poly.mos.season.lm.pred$mean, valid.ts.mos)
+accuracy(arima.mos.pred$mean, valid.ts.mos)
+accuracy(ses.mos.pred$mean, valid.ts.mos)
+accuracy(nnetforecast_mos$mean, valid.ts.mos)
+accuracy(naive.mos.pred$mean, valid.ts.mos)
+```
+For the weekly data, the Neural Network was the best performing model by far.  The MAPE was 10.66 and MAE was 25.70.  It blew out the rest of the models with the second best as the linear regression with trend and seasonality.  The MAPE for that was 55.71 and MAE was 115.74.
+
+For the monthly data, the Neural Prophet was also the best performing by far.  The MAPE was 3.10 and MAE 4.68.  The second best performing model was the SES model with a MAPE of 19.35 and MAE of 34.15.
+
+## Plot all Models
+```{r}
+#Weekly
+plot(tesla.week, ylab = "Tesla Stock Price in $USD", xlab = "year", main = "All Models for Weekly Data")
+lines(trend.wk.lm.pred$mean, col = "blue")
+lines(trend.wk.season.lm.pred$mean, col = "green")
+lines(poly.wk.season.lm.pred$mean, col = "yellow")
+lines(arima.week.pred$mean, col = "pink")
+lines(ses.week.pred$mean, col = "purple")
+lines(nnetforecast_wk$mean, col = "red")
+lines(naive.wk.pred$mean, col = "brown")
+legend(2019, 375, legend = c("Linear Regression Trend", "Linear Regression Trend + Season", "Polynomial Regression", "ARIMA", "SES", "NN", "Naive"), fill = c("blue", "green", "yellow", "pink", "purple", "red", "brown"), cex = 0.7)
+
+
+#Monthly
+plot(tesla.mos, ylab = "Tesla Stock Price in $USD", xlab = "year", main = "All Models for Monthly Data")
+lines(trend.mos.lm.pred$mean, col = "blue")
+lines(trend.mos.season.lm.pred$mean, col = "green")
+lines(poly.mos.season.lm.pred$mean, col = "yellow")
+lines(arima.mos.pred$mean, col = "pink")
+lines(ses.mos.pred$mean, col = "purple")
+lines(nnetforecast_mos$mean, col = "red")
+lines(naive.mos.pred$mean, col = "brown")
+legend(2019, 370, legend = c("Linear Regression Trend", "Linear Regression Trend + Season", "Polynomial Regression", "ARIMA", "SES", "NN", "Naive"), fill = c("blue", "green", "yellow", "pink", "purple", "red", "brown"), cex = 0.7)
+```
+
+# Forecast the FUTURE
+With model comparisons, we determine that Neural Networks is a better model. Thus, we will apply Neural Networks to the entire data and let it forecast the real future for 3 months and 12 weeks. Perhaps, we can check it with the real stock price after a couple of months.
+
+```{r}
+set.seed(10)
+
+# Weekly
+fit_wk_full <- nnetar(tesla.week, P = 2, lambda = 1)
+nnetforecast_wk_full <- forecast(fit_wk_full, h = 12, PI = TRUE) 
+
+nnetforecast_wk_full$mean
+which.min(nnetforecast_wk_full$mean) # 5 weeks after 2/14/2023 will hit low 
+
+autoplot(nnetforecast_wk_full) + 
+  xlab("Time") + ylab("Weekly Stock Price") +
+  ggtitle("Neural Network Future Weekly Forecast: (2,2,2)[52] model") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "grey")) 
+
+# Monthly
+fit_mos_full <- nnetar(tesla.mos, P = 2, lambda = 1)
+nnetforecast_mos_full <- forecast(fit_mos_full, h = 3, PI = TRUE) 
+
+nnetforecast_mos_full$mean
+which.min(nnetforecast_mos_full$mean) # 2 mos after 2/14/2023 will hit low 
+
+autoplot(nnetforecast_mos_full) + 
+  xlab("Time") + ylab("Monthly Stock Price") +
+  ggtitle("Neural Network Future Monthly Forecast: (1,2,2)[12] model") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "grey")) 
+
+```
+

@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Team 2: Jazz Ling, Eva Wang, Chris Fake, Nick Miller">
+
+<title>Tesla Time Series Project</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="Team02_Tesla_RCode_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Team02_Tesla_RCode_files/libs/quarto-html/quarto.js"></script>
+<script src="Team02_Tesla_RCode_files/libs/quarto-html/popper.min.js"></script>
+<script src="Team02_Tesla_RCode_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Team02_Tesla_RCode_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Team02_Tesla_RCode_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Team02_Tesla_RCode_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Team02_Tesla_RCode_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Team02_Tesla_RCode_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Team02_Tesla_RCode_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#import-data" id="toc-import-data" class="nav-link active" data-scroll-target="#import-data">Import Data</a>
+  <ul class="collapse">
+  <li><a href="#clean-data-and-create-weekly-and-monthly-time-series" id="toc-clean-data-and-create-weekly-and-monthly-time-series" class="nav-link" data-scroll-target="#clean-data-and-create-weekly-and-monthly-time-series">Clean Data and Create Weekly and Monthly Time series</a></li>
+  </ul></li>
+  <li><a href="#acf-of-differences-plot" id="toc-acf-of-differences-plot" class="nav-link" data-scroll-target="#acf-of-differences-plot">AcF of Differences Plot</a></li>
+  <li><a href="#plot-for-covid-19-and-global-chip-shortage-impact" id="toc-plot-for-covid-19-and-global-chip-shortage-impact" class="nav-link" data-scroll-target="#plot-for-covid-19-and-global-chip-shortage-impact">Plot for COVID-19 and Global Chip Shortage Impact</a></li>
+  <li><a href="#forecasting-data" id="toc-forecasting-data" class="nav-link" data-scroll-target="#forecasting-data">Forecasting Data</a>
+  <ul class="collapse">
+  <li><a href="#data-partition" id="toc-data-partition" class="nav-link" data-scroll-target="#data-partition">Data Partition</a></li>
+  </ul></li>
+  <li><a href="#regression-based-models" id="toc-regression-based-models" class="nav-link" data-scroll-target="#regression-based-models">Regression Based models</a>
+  <ul class="collapse">
+  <li><a href="#regression---weekly" id="toc-regression---weekly" class="nav-link" data-scroll-target="#regression---weekly">Regression - Weekly</a></li>
+  <li><a href="#regression---monthly" id="toc-regression---monthly" class="nav-link" data-scroll-target="#regression---monthly">Regression - Monthly</a></li>
+  </ul></li>
+  <li><a href="#arima" id="toc-arima" class="nav-link" data-scroll-target="#arima">Arima</a>
+  <ul class="collapse">
+  <li><a href="#arima-model---weekly" id="toc-arima-model---weekly" class="nav-link" data-scroll-target="#arima-model---weekly">Arima Model - Weekly</a></li>
+  <li><a href="#arima-model---monthly" id="toc-arima-model---monthly" class="nav-link" data-scroll-target="#arima-model---monthly">Arima Model - Monthly</a></li>
+  </ul></li>
+  <li><a href="#ses" id="toc-ses" class="nav-link" data-scroll-target="#ses">SES</a>
+  <ul class="collapse">
+  <li><a href="#ses---weekly" id="toc-ses---weekly" class="nav-link" data-scroll-target="#ses---weekly">SES - Weekly</a></li>
+  <li><a href="#ses---monthly" id="toc-ses---monthly" class="nav-link" data-scroll-target="#ses---monthly">SES - Monthly</a></li>
+  </ul></li>
+  <li><a href="#ets" id="toc-ets" class="nav-link" data-scroll-target="#ets">ETS</a>
+  <ul class="collapse">
+  <li><a href="#ets---weekly" id="toc-ets---weekly" class="nav-link" data-scroll-target="#ets---weekly">ETS - Weekly</a></li>
+  <li><a href="#ets---monthly" id="toc-ets---monthly" class="nav-link" data-scroll-target="#ets---monthly">ETS - Monthly</a></li>
+  </ul></li>
+  <li><a href="#neural-network" id="toc-neural-network" class="nav-link" data-scroll-target="#neural-network">Neural Network</a></li>
+  <li><a href="#naive" id="toc-naive" class="nav-link" data-scroll-target="#naive">Naive</a></li>
+  <li><a href="#model-evaluations" id="toc-model-evaluations" class="nav-link" data-scroll-target="#model-evaluations">Model Evaluations</a>
+  <ul class="collapse">
+  <li><a href="#plot-all-models" id="toc-plot-all-models" class="nav-link" data-scroll-target="#plot-all-models">Plot all Models</a></li>
+  </ul></li>
+  <li><a href="#forecast-the-future" id="toc-forecast-the-future" class="nav-link" data-scroll-target="#forecast-the-future">Forecast the FUTURE</a></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Tesla Time Series Project</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Team 2: Jazz Ling, Eva Wang, Chris Fake, Nick Miller </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="import-data" class="level1">
+<h1>Import Data</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>tesla.data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'TSLA.csv'</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>tesla.data<span class="sc">$</span>Date <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(tesla.data<span class="sc">$</span>Date, <span class="at">format =</span> <span class="st">"%Y-%m-%d"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="clean-data-and-create-weekly-and-monthly-time-series" class="level2">
+<h2 class="anchored" data-anchor-id="clean-data-and-create-weekly-and-monthly-time-series">Clean Data and Create Weekly and Monthly Time series</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Weekly</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>weekly.data <span class="ot">&lt;-</span> tesla.data <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="at">week =</span> <span class="fu">format</span>(Date, <span class="st">"%Y-%U"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Adj.Close =</span> <span class="fu">median</span>(Adj.Close))</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>weekly.ts <span class="ot">&lt;-</span> <span class="fu">ts</span>(weekly.data<span class="sc">$</span>Adj.Close, <span class="at">freq =</span> <span class="dv">52</span>, <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">2017</span>,<span class="dv">1</span>), <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2023</span>,<span class="dv">2</span>))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(weekly.ts, <span class="at">ylab =</span> <span class="st">"Stock Price in $USD"</span>, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">main =</span> <span class="st">"Weekly Tesla Stock Price vs. Year"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Monthly</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>monthly.data <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(tesla.data<span class="sc">$</span>Adj.Close, </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">by =</span> <span class="fu">list</span>(<span class="fu">format</span>(tesla.data<span class="sc">$</span>Date, <span class="st">"%Y-%m"</span>)), </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">FUN =</span> median)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>monthly.ts <span class="ot">&lt;-</span> <span class="fu">ts</span>(monthly.data<span class="sc">$</span>x, <span class="at">freq =</span> <span class="dv">12</span>, <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">2017</span>,<span class="dv">1</span>), <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2023</span>,<span class="dv">2</span>))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(monthly.ts, <span class="at">ylab =</span> <span class="st">"Stock Price in $USD"</span>, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">main =</span> <span class="st">"Monthly Tesla Stock Price vs. Year (2017-2023)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-2-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="acf-of-differences-plot" class="level1">
+<h1>AcF of Differences Plot</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(forecast)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'quantmod':
+  method            from
+  as.zoo.data.frame zoo </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Weekly</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Acf</span>(<span class="fu">diff</span>(weekly.ts), <span class="at">main =</span> <span class="st">"ACF of Differences on Weekly Data"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Monthly</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Acf</span>(<span class="fu">diff</span>(monthly.ts), <span class="at">main =</span> <span class="st">"ACF of Differences on Monthly Data"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-3-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="plot-for-covid-19-and-global-chip-shortage-impact" class="level1">
+<h1>Plot for COVID-19 and Global Chip Shortage Impact</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>covid.ts <span class="ot">&lt;-</span> <span class="fu">ts</span>(monthly.data<span class="sc">$</span>x, <span class="at">freq =</span> <span class="dv">12</span>, <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">2019</span>,<span class="dv">1</span>), <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2023</span>,<span class="dv">2</span>))</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(covid.ts, <span class="at">ylab =</span> <span class="st">"Stock Price in $USD"</span>, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">main =</span> <span class="st">"Monthly Tesla Stock Price vs. Year (2019-2023)"</span>, <span class="at">xaxt =</span> <span class="st">"n"</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">axis</span>(<span class="dv">1</span>, <span class="at">at =</span> <span class="fu">seq</span>(<span class="dv">2019</span>, <span class="dv">2023</span>, <span class="at">by =</span> <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="forecasting-data" class="level1">
+<h1>Forecasting Data</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>tesla.week <span class="ot">&lt;-</span> <span class="fu">window</span>(weekly.ts, <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">2019</span>,<span class="dv">1</span>), <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2023</span>,<span class="dv">2</span>))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>tesla.mos <span class="ot">&lt;-</span> <span class="fu">window</span>(monthly.ts, <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">2019</span>,<span class="dv">1</span>), <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2023</span>,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="data-partition" class="level3">
+<h3 class="anchored" data-anchor-id="data-partition">Data Partition</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Weekly</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>nValid.week <span class="ot">&lt;-</span> <span class="fu">length</span>(<span class="fu">seq</span>(<span class="at">from =</span> <span class="fu">as.Date</span>(<span class="st">"2022-06-01"</span>), <span class="at">to=</span> <span class="fu">as.Date</span>(<span class="st">"2023-02-14"</span>), <span class="at">by=</span><span class="st">"week"</span>)) </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># start from 2022.6</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>nTrain.week <span class="ot">&lt;-</span> <span class="fu">length</span>(tesla.week) <span class="sc">-</span> nValid.week</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>train.ts.week <span class="ot">&lt;-</span> <span class="fu">window</span>(tesla.week, <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">2019</span>,<span class="dv">1</span>), <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2019</span>, nTrain.week)) </span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>valid.ts.week <span class="ot">&lt;-</span> <span class="fu">window</span>(tesla.week, <span class="at">start=</span><span class="fu">c</span>(<span class="dv">2019</span>, nTrain.week <span class="sc">+</span> <span class="dv">1</span>), <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2019</span>, nTrain.week <span class="sc">+</span> nValid.week))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Monthly</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>nValid.mos <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>nTrain.mos <span class="ot">&lt;-</span> <span class="fu">length</span>(tesla.mos) <span class="sc">-</span> nValid.mos</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>train.ts.mos <span class="ot">&lt;-</span> <span class="fu">window</span>(tesla.mos, <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">2019</span>,<span class="dv">1</span>), <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2019</span>, nTrain.mos)) </span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>valid.ts.mos <span class="ot">&lt;-</span> <span class="fu">window</span>(tesla.mos, <span class="at">start=</span><span class="fu">c</span>(<span class="dv">2019</span>, nTrain.mos <span class="sc">+</span> <span class="dv">1</span>), <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2019</span>, nTrain.mos <span class="sc">+</span> nValid.mos))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="regression-based-models" class="level1">
+<h1>Regression Based models</h1>
+<p>Let’s try a couple different regression-based models and see which one works best</p>
+<section id="regression---weekly" class="level3">
+<h3 class="anchored" data-anchor-id="regression---weekly">Regression - Weekly</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>trend.wk.lm <span class="ot">&lt;-</span> <span class="fu">tslm</span>(train.ts.week <span class="sc">~</span> trend)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>trend.wk.season.lm <span class="ot">&lt;-</span> <span class="fu">tslm</span>(train.ts.week <span class="sc">~</span> trend <span class="sc">+</span> season)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>poly.wk.season.lm <span class="ot">&lt;-</span> <span class="fu">tslm</span>(train.ts.week <span class="sc">~</span> trend <span class="sc">+</span> <span class="fu">I</span>(trend<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> season)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>trend.wk.lm.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(trend.wk.lm, <span class="at">h=</span>nValid.week, <span class="at">level=</span><span class="dv">0</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>trend.wk.season.lm.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(trend.wk.season.lm, <span class="at">h=</span>nValid.week, <span class="at">level=</span><span class="dv">0</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>poly.wk.season.lm.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(poly.wk.season.lm, <span class="at">h=</span>nValid.week, <span class="at">level=</span><span class="dv">0</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(trend.wk.lm.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -125.3063 141.2925 125.3561 -58.81643 58.83129 0.8364662  9.017047</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(trend.wk.season.lm.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -115.5161 138.5366 115.7363 -55.64581 55.71151 0.8604261  9.137694</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(poly.wk.season.lm.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -184.9798 205.7063 184.9798 -85.94993 85.94993 0.8745638  13.07474</code></pre>
+</div>
+</div>
+<p>From these models and comparing the MAPE, we can clearly see that the linear model with just trend and season is the best predictor of the telsa stock.</p>
+<p>Let’s visualize this now.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tesla.week, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">ylab =</span> <span class="st">"Tesla Stock Price in $USD"</span>, <span class="at">main =</span> <span class="st">"Linear Regression for Weekly Data"</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(trend.wk.lm.pred<span class="sc">$</span>mean, <span class="at">col=</span><span class="st">'green'</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(trend.wk.season.lm.pred<span class="sc">$</span>mean, <span class="at">col=</span><span class="st">'red'</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(poly.wk.season.lm.pred<span class="sc">$</span>mean, <span class="at">col=</span><span class="st">'blue'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="regression---monthly" class="level3">
+<h3 class="anchored" data-anchor-id="regression---monthly">Regression - Monthly</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>trend.mos.lm <span class="ot">&lt;-</span> <span class="fu">tslm</span>(train.ts.mos <span class="sc">~</span> trend)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>trend.mos.season.lm <span class="ot">&lt;-</span> <span class="fu">tslm</span>(train.ts.mos <span class="sc">~</span> trend <span class="sc">+</span> season)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>poly.mos.season.lm <span class="ot">&lt;-</span> <span class="fu">tslm</span>(train.ts.mos <span class="sc">~</span> trend <span class="sc">+</span> <span class="fu">I</span>(trend<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> season)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>trend.mos.lm.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(trend.mos.lm, <span class="at">h=</span>nValid.mos, <span class="at">level=</span><span class="dv">0</span>)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>trend.mos.season.lm.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(trend.mos.season.lm, <span class="at">h=</span>nValid.mos, <span class="at">level=</span><span class="dv">0</span>)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>poly.mos.season.lm.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(poly.mos.season.lm, <span class="at">h=</span>nValid.mos, <span class="at">level=</span><span class="dv">0</span>)</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(trend.mos.lm.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               ME     RMSE     MAE       MPE     MAPE       ACF1 Theil's U
+Test set -190.067 191.6712 190.067 -124.9972 124.9972 -0.5647636  3.389674</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(trend.mos.season.lm.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE       ACF1 Theil's U
+Test set -236.3771 238.6371 236.3771 -155.6273 155.6273 -0.6051757  4.255005</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(poly.mos.season.lm.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE       ACF1 Theil's U
+Test set -188.6827 192.0062 188.6827 -125.2315 125.2315 -0.6144923  3.430277</code></pre>
+</div>
+</div>
+<p>Here, it looks like actually the polynomial trend and season is the most accurate, with the linear model with just trend being a close second best.</p>
+<p>Let’s visualize this monthly data now.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tesla.mos, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">ylab =</span> <span class="st">"Tesla Stock Price in $USD"</span>, <span class="at">main =</span> <span class="st">"Linear Regression for Monthly Data"</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(trend.mos.lm.pred<span class="sc">$</span>mean, <span class="at">col=</span><span class="st">'green'</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(trend.mos.season.lm.pred<span class="sc">$</span>mean, <span class="at">col=</span><span class="st">'red'</span>)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(poly.mos.season.lm.pred<span class="sc">$</span>mean, <span class="at">col=</span><span class="st">'blue'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>From these, we can see that both predictions are going in the exact opposite direction of the actual validation data trend. Thus, it is safe to say that weekly data is best for this Tesla data when it comes to linear models.</p>
+</section>
+</section>
+<section id="arima" class="level1">
+<h1>Arima</h1>
+<section id="arima-model---weekly" class="level2">
+<h2 class="anchored" data-anchor-id="arima-model---weekly">Arima Model - Weekly</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(forecast)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>arima.week <span class="ot">&lt;-</span> <span class="fu">auto.arima</span>(train.ts.week) <span class="co">#ARIMA(0,1,1)</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(arima.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Series: train.ts.week 
+ARIMA(0,1,1) with drift 
+
+Coefficients:
+         ma1   drift
+      0.2640  1.8871
+s.e.  0.0781  1.2213
+
+sigma^2 = 162.9:  log likelihood = -681.07
+AIC=1368.15   AICc=1368.29   BIC=1377.59
+
+Training set error measures:
+                      ME     RMSE      MAE       MPE    MAPE       MASE
+Training set 0.004981296 12.65034 7.693593 -2.481597 7.07997 0.06892258
+                    ACF1
+Training set -0.01534091</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>arima.week.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(arima.week, <span class="at">h =</span> nValid.week, <span class="at">level =</span> <span class="dv">0</span>)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(arima.week.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -137.1278 150.6665 137.1278 -63.60255 63.60255 0.8326443  9.494892</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tesla.week, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">ylab =</span> <span class="st">"Tesla Stock Price in $USD"</span>, <span class="at">main =</span> <span class="st">"ARIMA Model for Weekly Data"</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(arima.week.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="arima-model---monthly" class="level2">
+<h2 class="anchored" data-anchor-id="arima-model---monthly">Arima Model - Monthly</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>arima.mos <span class="ot">&lt;-</span> <span class="fu">auto.arima</span>(train.ts.mos) <span class="co">#ARIMA(0,1,0)</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(arima.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Series: train.ts.mos 
+ARIMA(0,1,0) 
+
+sigma^2 = 1012:  log likelihood = -224.42
+AIC=450.84   AICc=450.93   BIC=452.67
+
+Training set error measures:
+                   ME     RMSE      MAE      MPE     MAPE      MASE      ACF1
+Training set 3.618426 31.46834 20.99143 3.097123 13.69491 0.2043282 0.1027043</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>arima.mos.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(arima.mos, <span class="at">h =</span> nValid.mos, <span class="at">level =</span> <span class="dv">0</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(arima.mos.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME    RMSE   MAE       MPE     MAPE       ACF1 Theil's U
+Test set -30.53333 41.2842 33.91 -22.69158 24.41626 -0.4479517 0.7169652</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tesla.mos, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">ylab =</span> <span class="st">"Tesla Stock Price in $USD"</span>, <span class="at">main =</span> <span class="st">"ARIMA Model for Monthly Data"</span>)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(arima.mos.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Look at Simple Exponential Smoothing model due to lack of apparent trend and seasonality.</p>
+</section>
+</section>
+<section id="ses" class="level1">
+<h1>SES</h1>
+<section id="ses---weekly" class="level2">
+<h2 class="anchored" data-anchor-id="ses---weekly">SES - Weekly</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>ses.week.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(train.ts.week, <span class="at">h =</span> nValid.week)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(ses.week.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -133.7566 153.9256 133.7566 -63.23887 63.23887 0.8717124  9.959956</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tesla.week, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">ylab =</span> <span class="st">"Tesla Stock Price in $USD"</span>, <span class="at">main =</span> <span class="st">"SES Model for Weekly Data"</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(ses.week.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="ses---monthly" class="level2">
+<h2 class="anchored" data-anchor-id="ses---monthly">SES - Monthly</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>ses.mos.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(train.ts.mos, <span class="at">h =</span> nValid.mos)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(ses.mos.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               ME     RMSE     MAE      MPE     MAPE       ACF1 Theil's U
+Test set 16.19163 45.00752 34.1464 6.362984 19.34789 -0.1961226   1.06765</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tesla.mos, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">ylab =</span> <span class="st">"Tesla Stock Price in $USD"</span>, <span class="at">main =</span> <span class="st">"SES Model for Monthly Data"</span>)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(ses.mos.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Let’s try and use an automatically selected alpha using ETS()</p>
+</section>
+</section>
+<section id="ets" class="level1">
+<h1>ETS</h1>
+<section id="ets---weekly" class="level2">
+<h2 class="anchored" data-anchor-id="ets---weekly">ETS - Weekly</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>ets.week <span class="ot">&lt;-</span> <span class="fu">ets</span>(train.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in ets(train.ts.week): I can't handle data with frequency greater than
+24. Seasonality will be ignored. Try stlf() if you need seasonal forecasts.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(ets.week) <span class="co">#MAN</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ETS(M,A,N) 
+
+Call:
+ ets(y = train.ts.week) 
+
+  Smoothing parameters:
+    alpha = 0.9999 
+    beta  = 0.0935 
+
+  Initial states:
+    l = 24.0415 
+    b = -0.6273 
+
+  sigma:  0.0857
+
+     AIC     AICc      BIC 
+1559.812 1560.172 1575.579 
+
+Training set error measures:
+                    ME     RMSE      MAE       MPE     MAPE       MASE
+Training set 0.2781374 13.35763 7.730855 0.5255897 5.922177 0.06925639
+                  ACF1
+Training set 0.1787919</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>ets.week.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(ets.week, <span class="at">h =</span> nValid.week, <span class="at">level =</span> <span class="dv">0</span>)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(ets.week.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME    RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -179.5398 196.741 179.5398 -82.86146 82.86146 0.8527977  12.34258</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tesla.week, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">ylab =</span> <span class="st">"Tesla Stock Price in $USD"</span>, <span class="at">main =</span> <span class="st">"ETS Model for Weekly Data"</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(ets.week.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="ets---monthly" class="level2">
+<h2 class="anchored" data-anchor-id="ets---monthly">ETS - Monthly</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>ets.mos <span class="ot">&lt;-</span> <span class="fu">ets</span>(train.ts.mos)</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(ets.mos) <span class="co">#MAN</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ETS(M,A,N) 
+
+Call:
+ ets(y = train.ts.mos) 
+
+  Smoothing parameters:
+    alpha = 0.9569 
+    beta  = 0.3265 
+
+  Initial states:
+    l = 21.5422 
+    b = -1.4615 
+
+  sigma:  0.1855
+
+     AIC     AICc      BIC 
+457.1651 458.6285 466.4158 
+
+Training set error measures:
+                    ME     RMSE      MAE       MPE     MAPE      MASE
+Training set -1.450392 34.02463 22.57647 0.6796832 13.86726 0.2197567
+                     ACF1
+Training set -0.001246801</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>ets.mos.pred <span class="ot">&lt;-</span> <span class="fu">forecast</span>(ets.mos, <span class="at">h =</span> nValid.mos, <span class="at">level =</span> <span class="dv">0</span>)</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(ets.mos.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               ME     RMSE     MAE      MPE     MAPE       ACF1 Theil's U
+Test set 16.19163 45.00752 34.1464 6.362984 19.34789 -0.1961226   1.06765</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tesla.mos, <span class="at">xlab =</span> <span class="st">"Year"</span>, <span class="at">ylab =</span> <span class="st">"Tesla Stock Price in $USD"</span>, <span class="at">main =</span> <span class="st">"ETS Model for Monthly Data"</span>)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(ets.mos.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Let’s compare the SES and ETS models:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Weekly</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(ses.week.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -133.7566 153.9256 133.7566 -63.23887 63.23887 0.8717124  9.959956</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(ets.week.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME    RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -179.5398 196.741 179.5398 -82.86146 82.86146 0.8527977  12.34258</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Monthly</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(ses.mos.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               ME     RMSE     MAE      MPE     MAPE       ACF1 Theil's U
+Test set 16.19163 45.00752 34.1464 6.362984 19.34789 -0.1961226   1.06765</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(ets.mos.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               ME     RMSE     MAE      MPE     MAPE       ACF1 Theil's U
+Test set 16.19163 45.00752 34.1464 6.362984 19.34789 -0.1961226   1.06765</code></pre>
+</div>
+</div>
+<p>We see that the SES model is better regarding weekly data as it has a smaller MAPE and MAE than the ETS model. For the monthly data, the ETS() function gives the same model as the SES model. We will proceed to use the SES model and its predictions to compare to the other models.</p>
+</section>
+</section>
+<section id="neural-network" class="level1">
+<h1>Neural Network</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Weekly</span></span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">80</span>)</span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>fit_wk <span class="ot">&lt;-</span> <span class="fu">nnetar</span>(train.ts.week, <span class="at">P =</span> <span class="dv">2</span>, <span class="at">lambda =</span> <span class="dv">1</span>)</span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a>nnetforecast_wk <span class="ot">&lt;-</span> <span class="fu">forecast</span>(fit_wk, <span class="at">h =</span> nValid.week, <span class="at">PI =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(nnetforecast_wk) <span class="sc">+</span> </span>
+<span id="cb66-9"><a href="#cb66-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autolayer</span>(valid.ts.week) <span class="sc">+</span></span>
+<span id="cb66-10"><a href="#cb66-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Neural Network Weekly Forecast: (2,2,2)[52] model"</span>) <span class="sc">+</span></span>
+<span id="cb66-11"><a href="#cb66-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Time"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Weekly Stock Price"</span>) <span class="sc">+</span></span>
+<span id="cb66-12"><a href="#cb66-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb66-13"><a href="#cb66-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid.major =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb66-14"><a href="#cb66-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb66-15"><a href="#cb66-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.border =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb66-16"><a href="#cb66-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb66-17"><a href="#cb66-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">colour =</span> <span class="st">"grey"</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(nnetforecast_wk<span class="sc">$</span>mean, valid.ts.week) <span class="co"># MAPE 10.66192</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -1.393982 29.29038 25.70614 -2.336013 10.66192 0.7338444  1.573509</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Monthly</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2678</span>)</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>fit_mos <span class="ot">&lt;-</span> <span class="fu">nnetar</span>(train.ts.mos, <span class="at">P =</span> <span class="dv">2</span>, <span class="at">lambda =</span> <span class="dv">1</span>)</span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>nnetforecast_mos <span class="ot">&lt;-</span> <span class="fu">forecast</span>(fit_mos, <span class="at">h =</span> nValid.mos, <span class="at">PI =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(nnetforecast_mos) <span class="sc">+</span> </span>
+<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autolayer</span>(valid.ts.mos) <span class="sc">+</span></span>
+<span id="cb69-8"><a href="#cb69-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Neural Network Monthly Forecast: (1,2,2)[12] model"</span>) <span class="sc">+</span></span>
+<span id="cb69-9"><a href="#cb69-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Time"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Monthly Stock Price"</span>) <span class="sc">+</span></span>
+<span id="cb69-10"><a href="#cb69-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb69-11"><a href="#cb69-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid.major =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb69-12"><a href="#cb69-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb69-13"><a href="#cb69-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.border =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb69-14"><a href="#cb69-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb69-15"><a href="#cb69-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">colour =</span> <span class="st">"grey"</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-19-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(nnetforecast_mos<span class="sc">$</span>mean, valid.ts.mos) <span class="co"># MAPE 3.35368</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE     MAE       MPE    MAPE       ACF1  Theil's U
+Test set -2.137344 5.145681 5.09701 -1.841988 3.35368 -0.2360817 0.09273765</code></pre>
+</div>
+</div>
+</section>
+<section id="naive" class="level1">
+<h1>Naive</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Weekly</span></span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>naive.wk.pred <span class="ot">&lt;-</span> <span class="fu">naive</span>(train.ts.week, <span class="at">h=</span>nValid.week)</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(naive.wk.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -105.9412 116.2147 105.9412 -49.16016 49.16016 0.8098478  7.293076</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Monthly</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>naive.mos.pred <span class="ot">&lt;-</span> <span class="fu">naive</span>(train.ts.mos, <span class="at">h=</span>nValid.mos)</span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(naive.mos.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME    RMSE   MAE       MPE     MAPE       ACF1 Theil's U
+Test set -30.53333 41.2842 33.91 -22.69158 24.41626 -0.4479517 0.7169652</code></pre>
+</div>
+</div>
+</section>
+<section id="model-evaluations" class="level1">
+<h1>Model Evaluations</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Weekly</span></span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(trend.wk.lm.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -125.3063 141.2925 125.3561 -58.81643 58.83129 0.8364662  9.017047</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(trend.wk.season.lm.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -115.5161 138.5366 115.7363 -55.64581 55.71151 0.8604261  9.137694</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(poly.wk.season.lm.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -184.9798 205.7063 184.9798 -85.94993 85.94993 0.8745638  13.07474</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(arima.week.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -137.1278 150.6665 137.1278 -63.60255 63.60255 0.8326443  9.494892</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(ses.week.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -133.7566 153.9256 133.7566 -63.23887 63.23887 0.8717124  9.959956</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(nnetforecast_wk<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -1.393982 29.29038 25.70614 -2.336013 10.66192 0.7338444  1.573509</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(naive.wk.pred<span class="sc">$</span>mean, valid.ts.week)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE      ACF1 Theil's U
+Test set -105.9412 116.2147 105.9412 -49.16016 49.16016 0.8098478  7.293076</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Monthly</span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(trend.mos.lm.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               ME     RMSE     MAE       MPE     MAPE       ACF1 Theil's U
+Test set -190.067 191.6712 190.067 -124.9972 124.9972 -0.5647636  3.389674</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(trend.mos.season.lm.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE       ACF1 Theil's U
+Test set -236.3771 238.6371 236.3771 -155.6273 155.6273 -0.6051757  4.255005</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(poly.mos.season.lm.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE      MAE       MPE     MAPE       ACF1 Theil's U
+Test set -188.6827 192.0062 188.6827 -125.2315 125.2315 -0.6144923  3.430277</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(arima.mos.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME    RMSE   MAE       MPE     MAPE       ACF1 Theil's U
+Test set -30.53333 41.2842 33.91 -22.69158 24.41626 -0.4479517 0.7169652</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(ses.mos.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               ME     RMSE     MAE      MPE     MAPE       ACF1 Theil's U
+Test set 16.19163 45.00752 34.1464 6.362984 19.34789 -0.1961226   1.06765</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(nnetforecast_mos<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME     RMSE     MAE       MPE    MAPE       ACF1  Theil's U
+Test set -2.137344 5.145681 5.09701 -1.841988 3.35368 -0.2360817 0.09273765</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="fu">accuracy</span>(naive.mos.pred<span class="sc">$</span>mean, valid.ts.mos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                ME    RMSE   MAE       MPE     MAPE       ACF1 Theil's U
+Test set -30.53333 41.2842 33.91 -22.69158 24.41626 -0.4479517 0.7169652</code></pre>
+</div>
+</div>
+<p>For the weekly data, the Neural Network was the best performing model by far. The MAPE was 10.66 and MAE was 25.70. It blew out the rest of the models with the second best as the linear regression with trend and seasonality. The MAPE for that was 55.71 and MAE was 115.74.</p>
+<p>For the monthly data, the Neural Prophet was also the best performing by far. The MAPE was 3.10 and MAE 4.68. The second best performing model was the SES model with a MAPE of 19.35 and MAE of 34.15.</p>
+<section id="plot-all-models" class="level2">
+<h2 class="anchored" data-anchor-id="plot-all-models">Plot all Models</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Weekly</span></span>
+<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tesla.week, <span class="at">ylab =</span> <span class="st">"Tesla Stock Price in $USD"</span>, <span class="at">xlab =</span> <span class="st">"year"</span>, <span class="at">main =</span> <span class="st">"All Models for Weekly Data"</span>)</span>
+<span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(trend.wk.lm.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"blue"</span>)</span>
+<span id="cb104-4"><a href="#cb104-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(trend.wk.season.lm.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"green"</span>)</span>
+<span id="cb104-5"><a href="#cb104-5" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(poly.wk.season.lm.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"yellow"</span>)</span>
+<span id="cb104-6"><a href="#cb104-6" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(arima.week.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"pink"</span>)</span>
+<span id="cb104-7"><a href="#cb104-7" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(ses.week.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"purple"</span>)</span>
+<span id="cb104-8"><a href="#cb104-8" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(nnetforecast_wk<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"red"</span>)</span>
+<span id="cb104-9"><a href="#cb104-9" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(naive.wk.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"brown"</span>)</span>
+<span id="cb104-10"><a href="#cb104-10" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="dv">2019</span>, <span class="dv">375</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Linear Regression Trend"</span>, <span class="st">"Linear Regression Trend + Season"</span>, <span class="st">"Polynomial Regression"</span>, <span class="st">"ARIMA"</span>, <span class="st">"SES"</span>, <span class="st">"NN"</span>, <span class="st">"Naive"</span>), <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"blue"</span>, <span class="st">"green"</span>, <span class="st">"yellow"</span>, <span class="st">"pink"</span>, <span class="st">"purple"</span>, <span class="st">"red"</span>, <span class="st">"brown"</span>), <span class="at">cex =</span> <span class="fl">0.7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Monthly</span></span>
+<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(tesla.mos, <span class="at">ylab =</span> <span class="st">"Tesla Stock Price in $USD"</span>, <span class="at">xlab =</span> <span class="st">"year"</span>, <span class="at">main =</span> <span class="st">"All Models for Monthly Data"</span>)</span>
+<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(trend.mos.lm.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"blue"</span>)</span>
+<span id="cb105-4"><a href="#cb105-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(trend.mos.season.lm.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"green"</span>)</span>
+<span id="cb105-5"><a href="#cb105-5" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(poly.mos.season.lm.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"yellow"</span>)</span>
+<span id="cb105-6"><a href="#cb105-6" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(arima.mos.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"pink"</span>)</span>
+<span id="cb105-7"><a href="#cb105-7" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(ses.mos.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"purple"</span>)</span>
+<span id="cb105-8"><a href="#cb105-8" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(nnetforecast_mos<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"red"</span>)</span>
+<span id="cb105-9"><a href="#cb105-9" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(naive.mos.pred<span class="sc">$</span>mean, <span class="at">col =</span> <span class="st">"brown"</span>)</span>
+<span id="cb105-10"><a href="#cb105-10" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="dv">2019</span>, <span class="dv">370</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Linear Regression Trend"</span>, <span class="st">"Linear Regression Trend + Season"</span>, <span class="st">"Polynomial Regression"</span>, <span class="st">"ARIMA"</span>, <span class="st">"SES"</span>, <span class="st">"NN"</span>, <span class="st">"Naive"</span>), <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"blue"</span>, <span class="st">"green"</span>, <span class="st">"yellow"</span>, <span class="st">"pink"</span>, <span class="st">"purple"</span>, <span class="st">"red"</span>, <span class="st">"brown"</span>), <span class="at">cex =</span> <span class="fl">0.7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-22-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="forecast-the-future" class="level1">
+<h1>Forecast the FUTURE</h1>
+<p>With model comparisons, we determine that Neural Networks is a better model. Thus, we will apply Neural Networks to the entire data and let it forecast the real future for 3 months and 12 weeks. Perhaps, we can check it with the real stock price after a couple of months.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">10</span>)</span>
+<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Weekly</span></span>
+<span id="cb106-4"><a href="#cb106-4" aria-hidden="true" tabindex="-1"></a>fit_wk_full <span class="ot">&lt;-</span> <span class="fu">nnetar</span>(tesla.week, <span class="at">P =</span> <span class="dv">2</span>, <span class="at">lambda =</span> <span class="dv">1</span>)</span>
+<span id="cb106-5"><a href="#cb106-5" aria-hidden="true" tabindex="-1"></a>nnetforecast_wk_full <span class="ot">&lt;-</span> <span class="fu">forecast</span>(fit_wk_full, <span class="at">h =</span> <span class="dv">12</span>, <span class="at">PI =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb106-6"><a href="#cb106-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb106-7"><a href="#cb106-7" aria-hidden="true" tabindex="-1"></a>nnetforecast_wk_full<span class="sc">$</span>mean</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Time Series:
+Start = c(2023, 3) 
+End = c(2023, 14) 
+Frequency = 52 
+ [1] 132.50245  90.17434  44.96889  38.13499  37.32545  37.76793  39.24521
+ [8]  40.53171  48.38610  64.44008  59.51789  61.30467</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="fu">which.min</span>(nnetforecast_wk_full<span class="sc">$</span>mean) <span class="co"># 5 weeks after 2/14/2023 will hit low </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(nnetforecast_wk_full) <span class="sc">+</span> </span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Time"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Weekly Stock Price"</span>) <span class="sc">+</span></span>
+<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Neural Network Future Weekly Forecast: (2,2,2)[52] model"</span>) <span class="sc">+</span></span>
+<span id="cb110-4"><a href="#cb110-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb110-5"><a href="#cb110-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid.major =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb110-6"><a href="#cb110-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb110-7"><a href="#cb110-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.border =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb110-8"><a href="#cb110-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb110-9"><a href="#cb110-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">colour =</span> <span class="st">"grey"</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Monthly</span></span>
+<span id="cb111-2"><a href="#cb111-2" aria-hidden="true" tabindex="-1"></a>fit_mos_full <span class="ot">&lt;-</span> <span class="fu">nnetar</span>(tesla.mos, <span class="at">P =</span> <span class="dv">2</span>, <span class="at">lambda =</span> <span class="dv">1</span>)</span>
+<span id="cb111-3"><a href="#cb111-3" aria-hidden="true" tabindex="-1"></a>nnetforecast_mos_full <span class="ot">&lt;-</span> <span class="fu">forecast</span>(fit_mos_full, <span class="at">h =</span> <span class="dv">3</span>, <span class="at">PI =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb111-4"><a href="#cb111-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb111-5"><a href="#cb111-5" aria-hidden="true" tabindex="-1"></a>nnetforecast_mos_full<span class="sc">$</span>mean</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Mar      Apr      May
+2023 179.7793 161.0444 188.3325</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a><span class="fu">which.min</span>(nnetforecast_mos_full<span class="sc">$</span>mean) <span class="co"># 2 mos after 2/14/2023 will hit low </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(nnetforecast_mos_full) <span class="sc">+</span> </span>
+<span id="cb115-2"><a href="#cb115-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Time"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Monthly Stock Price"</span>) <span class="sc">+</span></span>
+<span id="cb115-3"><a href="#cb115-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Neural Network Future Monthly Forecast: (1,2,2)[12] model"</span>) <span class="sc">+</span></span>
+<span id="cb115-4"><a href="#cb115-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb115-5"><a href="#cb115-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid.major =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb115-6"><a href="#cb115-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb115-7"><a href="#cb115-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.border =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb115-8"><a href="#cb115-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb115-9"><a href="#cb115-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">colour =</span> <span class="st">"grey"</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Team02_Tesla_RCode_files/figure-html/unnamed-chunk-23-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
